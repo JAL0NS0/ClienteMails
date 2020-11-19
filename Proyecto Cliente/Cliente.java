@@ -1,186 +1,165 @@
-import java.io.*;
-import java.net.*;
 import java.util.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.net.*;
+import java.io.*;
 
-public class Cliente implements ActionListener{
-  public static final int PORT = 1200;
-  public static HashMap<String, String> servidores;
-  protected static Socket socketServer;
-  static BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
-  static Ventana app;
-  static VentanaLogin log;
-  public static void loadGUIComponents(){
-    System.out.println("Cargando ventana login...");
-    log = new VentanaLogin();
-    log.setVisible(true);
+public class Cliente{
+  static final int PUERTO=1200;
+  String servidor;
+  String respuesta;
+  MiSocket socket;
+  HashMap<String, String> tablaServidores;
+  String[] dividido;
+  String usuario;
+  String contrasena;
 
-    System.out.println("Cargando ventana app...");
-    app = new Ventana();
-    app.setVisible(true);
+  public Cliente(){
+    crearTablaIpsServidores();
+
   }
-    public static void NewMails(BufferedReader in,PrintWriter out,String usuario)throws Exception{
-      out.println("GETNEWMAILS " + usuario);
-      System.out.println("Cliente: GETNEWMAILS " + usuario);
-      String texto;
-      while(true){
-          texto = in.readLine();
-          System.out.println("Servidor: " + texto);
-          if(texto.charAt(texto.length()-1) == '*'){
-              break;
+  public void crearTablaIpsServidores(){
+    tablaServidores=new HashMap<String, String>();
+    tablaServidores.put("localhost", "127.0.0.1");
+    tablaServidores.put("serv2", "127.0.0.1");
+    tablaServidores.put("serv3", "127.0.0.1");
+  }
+  //Verifica el nombre del servidor e inicia la conexion con el socket
+  public byte Verificar(String nom, String contra){
+    System.out.println("Este es el usuario@server: "+nom);
+    System.out.println("Este es la contrasena: "+contra);
+    contrasena= contra;
+    dividido=nom.split("@");
+    System.out.println("Este es el usuario: "+dividido[0]);
+    usuario=dividido[0];
+    if(tablaServidores.containsKey(dividido[1])){
+      this.servidor= tablaServidores.get(dividido[1]);
+      System.out.println("servidor: "+servidor);
+        try{
+          socket= new MiSocket(servidor,PUERTO);
+        }catch(Exception e){
+          System.out.println("Error al crear el socket1");
+        }
+        try{
+          socket.getOut().println(Comandos.LOGIN + usuario+" "+contrasena);
+        }catch(Exception e){
+          System.out.println("Error al hablar");
+        }
+        try{
+          respuesta= socket.getIn().readLine();
+          System.out.println(respuesta);
+        }catch(Exception e){
+          System.out.println("Error al oir");
+        }
+        if(respuesta.equals(Comandos.OK_LOGIN)){
+          return 0;
+        }else if(respuesta.substring(0,Comandos.LOGIN_ERROR.length()).equals(Comandos.LOGIN_ERROR)){
+          if(respuesta.substring(Comandos.LOGIN_ERROR.length(),respuesta.length()).equals("101")) {
+            return 2;
+          }else if(respuesta.substring(Comandos.LOGIN_ERROR.length(),respuesta.length()).equals("102")) {
+            return 3;
           }
-      }
+        }
     }
-    public static boolean LogOut(BufferedReader in,PrintWriter out,String usuario)throws Exception{
-      out.println("LOGOUT");
-      System.out.println("Cliente: LOGOUT");
-      String respuesta=in.readLine();
+      return 1;
+  }
+  //Hace un log out con el servidor
+  public boolean cerrarSecion(){
+    try{
+      socket.out.println(Comandos.LOGOUT);
+      System.out.println("Cliente: "+Comandos.LOGOUT);
+      String respuesta=socket.getIn().readLine();
       System.out.println("Servidor: "+respuesta);
-      if(respuesta.equals("OK LOGOUT")){
+      if(respuesta.equals(Comandos.OK_LOGOUT)){
+        socket.closeIn();
+        socket.closeOut();
+        socket.closeMiSocket();
         return true;
       }else{
         System.out.println("No se ha podido hacer LOG OUT");
         return false;
       }
-    }
-  public static void SendMail(BufferedReader in,PrintWriter out,String usuario)throws IOException{
-    System.out.print("\t Ingrese usuario@server: ");
-    String destinatarios = teclado.readLine();
-    String[] x=destinatarios.split(" ");
-    System.out.print("\t Ingrese subject: ");
-    String subject = teclado.readLine();
-    System.out.print("\t Ingrese mensaje: ");
-    String mensaje = teclado.readLine();
-    System.out.println("SEND MAIL");
-    out.println("SEND MAIL");
-    for(String destino:x){
-      if(!destino.equals(x[x.length-1])){
-        System.out.println("Cliente: MAIL TO "+destino);
-        out.println("MAIL TO "+destino);
-      }else{
-        System.out.println("Cliente: MAIL TO "+destino+"*");
-        out.println("MAIL TO "+destino+"*");
-      }
-    }
-    System.out.println("Cliente: MAIL SUBJECT "+ subject);
-    out.println("MAIL SUBJECT "+ subject);
-    System.out.println("Cliente: MAIL BODY "+ mensaje);
-    out.println("MAIL BODY "+ mensaje);
-    System.out.println("Cliente: END SEND MAIL");
-    out.println("END SEND MAIL");
-    String respuesta=in.readLine();
-    System.out.println("Servidor: "+respuesta);
-    if(respuesta.equals("OK SEND MAIL")){
-      System.out.println("Correo enviado exitosamente");
-    }else{
-      System.out.println("Erro al envia correo");
+    }catch(Exception e){
+      System.out.println("Exception");
+      return false;
     }
   }
-  public static void ContacList(BufferedReader in,PrintWriter out,String usuario)throws Exception{
-    out.println("CLIST " + usuario);
-    System.out.println("Cliente: CLIST " + usuario);
-    String texto;
-    while(true){
-        texto = in.readLine();
-        System.out.println("Servidor: " + texto);
-        if(texto.charAt(texto.length()-1) == '*'){
-            break;
-        }
-    }
-  }
-  public static void NuevoContacto(BufferedReader in,PrintWriter out,String usuario)throws Exception{
-    System.out.print("Ingrese usuario@server: ");
-    String nuevo = teclado.readLine();
-    out.println("NEWCONT "+nuevo);
-    String respuesta=in.readLine();
-    System.out.println("Cliente: "+respuesta);
-    if(respuesta.substring(0,10).equals("OK NEWCONT")){
-      System.out.println("Contacto Guardado exitosamente");
-    }else{
-      System.out.println("Error al guardar contacto");
-    }
-
-  }
-  public static void main(String[] args)throws IOException{
-    HashMap<String, String> servidores = new HashMap<String, String>();
-    servidores.put("localhost", "127.0.0.1");
-    servidores.put("127.0.0.1", "127.0.0.1");
-    servidores.put("serv3", "127.0.0.2");
-    servidores.put("serv4", "127.0.0.3");
-    String[] user_server;
-    String user;
-    String server;
-    String password;
-    InputStreamReader isr;
-    BufferedReader in;
-    PrintWriter out;
-    String comando;
-    loadGUIComponents();
+  //Obtiene los nuevos mails y los devuelve en una lista como remitente,asunto,texto;
+  public ArrayList<String[]> getNuevosMails(){
+    ArrayList<String[]> nMails= new ArrayList<String[]>();
     try{
+    socket.getOut().println(Comandos.GETNEWMAILS + usuario);
+    System.out.println("Cliente: GETNEWMAILS "+usuario);
+    String mensaje="";
+    String todo;
+    String comando;
+    String remitente;
+    String asunto;
+    String body;
     while(true){
-        System.out.print("Ingrese usuario@server: ");
-        user = teclado.readLine();
-        user_server=user.split("@");
-        user=user_server[0];
-        server=user_server[1];
-        System.out.print("Ingrese password: ");
-        password = teclado.readLine();
-        if(servidores.containsKey(server)||servidores.containsValue(server)){
-          socketServer=new Socket(server,PORT);
-          isr = new InputStreamReader(socketServer.getInputStream());
-          in = new BufferedReader(isr);
-          // es importante el segundo argumento (true) para que tenga autoflush al hacer print
-          out = new PrintWriter(socketServer.getOutputStream(), true);
-          out.println("LOGIN "+user+" "+password);
-          comando=in.readLine();
-          System.out.println("Servidor: "+comando);
-          if(comando.equals("OK LOGIN")){
-            ContacList(in,out,user);
-            NewMails(in,out,user);
+        String[] aux= new String[3];
+        todo=socket.getIn().readLine();
+        System.out.println("Servidor: "+todo);
+        if(todo==null){
+          break;
+        }
+        if(todo.equals(Comandos.NO_MAILS)){
+          return null;}
+        comando=todo.substring(0,Comandos.OK_GETNEWMAILS.length());
+        if(comando.equals(Comandos.OK_GETNEWMAILS)){
+          mensaje= todo.substring(Comandos.OK_GETNEWMAILS.length(),todo.length());
+        //  System.out.println(mensaje);
+
+          int finalRemitente = mensaje.indexOf(" ");
+          int finalAsunto = mensaje.indexOf(" ",finalRemitente+1);
+          aux[0]=mensaje.substring(0,finalRemitente);
+          // System.out.println(aux[0]);
+          aux[1]=mensaje.substring(finalRemitente+1,finalAsunto);
+          // System.out.println(aux[1]);
+          aux[2]=mensaje.substring(finalAsunto+1,mensaje.length());
+          // System.out.println(aux[2]);
+          if(mensaje.charAt(mensaje.length()-1)==('*')){
+            // System.out.println(Arrays.toString(aux));
+            nMails.add(aux);
             break;
           }else{
-            in.close();
-            out.close();
-            // socketServer.close();
+            // System.out.println(Arrays.toString(aux));
+            nMails.add(aux);
+          }
+        }
+        // System.out.println(nMails);
+      }
+    }catch(Exception e){
+      e.printStackTrace();
+      System.out.println("Error al leer el comando Mails");
+    }
+    return nMails;
+  }
+  public ArrayList<String> getContactos(){
+    ArrayList<String> listaContactos=new ArrayList<String>();
+    try{
+    socket.getOut().println(Comandos.CLIST + usuario);
+    System.out.println("Cliente: CLIST "+usuario);
+    String aux;
+    String comando;
+    while(true){
+        aux=socket.getIn().readLine();
+        comando=aux.substring(0,Comandos.OK_CLIST.length());
+        System.out.println("Servidor: "+aux);
+        if(comando.equals(Comandos.OK_CLIST)){
+          aux= aux.substring(Comandos.OK_CLIST.length(),aux.length());
+          if(aux.charAt(aux.length()-1)==('*')){
+            listaContactos.add(aux);
+            break;
+          }else{
+            listaContactos.add(aux);
           }
         }
       }
-    while(true){
-      System.out.print("Ingrese un comando: ");
-      comando = teclado.readLine();
-      if(comando.equals("CLIST")){
-         ContacList(in,out,user);
-      }else if(comando.equals("GETNEWMAILS")){
-         NewMails(in,out,user);
-    }else if(comando.equals("SEND MAIL")){
-       SendMail(in,out,user);
-  }else if(comando.equals("NEWCONT")){
-     NuevoContacto(in,out,user);
-  }else if(comando.equals("LOGOUT")){
-      if(LogOut(in,out,user)){
-        System.out.println("Saliendo...");
-        break;
-      }
-  }else{
-        out.println(comando);
-      }
-    }
-    System.out.println("Llegando a cerrar");
-    in.close();
-    out.close();
-    socketServer.close();
-    System.out.println("Cerrado");
     }catch(Exception e){
+      System.out.println("Error al leer el comando");
     }
-    System.out.println("Ultima parte");
+    return listaContactos;
   }
-
-  @Override
-  public void actionPerformed​(ActionEvent e){
-    if(e.getSource()==app.butmails){
-      System.out.println("Ingreso a los mails");
-    }
+  public boolean enviarMensaje(String destinatario,String asunto,String cuerpo){
+    return true;
   }
 }
