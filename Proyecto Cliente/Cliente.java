@@ -11,10 +11,11 @@ public class Cliente{
   String[] dividido;
   String usuario;
   String contrasena;
+  MiBaseDeDatos miBaseDatos;
 
-  public Cliente(){
-    crearTablaIpsServidores();
-
+  public Cliente(MiBaseDeDatos miBD ){
+    miBaseDatos=miBD;
+    crearTablaIpsServidores();    
   }
   public void crearTablaIpsServidores(){
     tablaServidores=new HashMap<String, String>();
