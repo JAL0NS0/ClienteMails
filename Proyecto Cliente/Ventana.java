@@ -208,17 +208,15 @@ public class Ventana extends JFrame{
           }else if(cliente.Verificar(nombre,contra)==1){
             errorLogin.setText("Servidor Desconocido");
             errorLogin.setVisible(true);
-            System.out.println("Error");
           }else{
             errorLogin.setText("Usuario o contrasena invalido");
             errorLogin.setBounds(130,210,220,15);
             errorLogin.setVisible(true);
-            System.out.println("Error");}
+          }
         }else{
           errorLogin.setText("Formato incorrecto usuario@server");
           errorLogin.setLocation(login.getWidth()/2-errorLogin.getX()/2,15);
           errorLogin.setVisible(true);
-          System.out.println("Error");
         }
       }
     });

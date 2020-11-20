@@ -66,6 +66,7 @@ public class ServidorPrueba {
 
                 } else if((flag[0].equals("CLIST"))){
                   if(usuarios.containsKey(flag[1])){
+
                     int contador = 0;
                     for(String i : servidores.keySet()){
                       contador++;
@@ -74,10 +75,10 @@ public class ServidorPrueba {
                         out.println("OK CLIST " + i + servidores.get(i));
                       } else {
                         System.out.println("Servidor: OK CLIST " + i + servidores.get(i) + " *");
-                        out.println("OK CLIST " + i + servidores.get(i) + " *");
+                        out.println("OK CLIST " + i + servidores.get(i) + "*");
                       }
-                      Thread.sleep(10);
                     }
+                    Thread.sleep(10);
                   }
                   //}
                 } else if((flag[0].equals("GETNEWMAILS"))){
@@ -134,7 +135,6 @@ public class ServidorPrueba {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
     }
 }
