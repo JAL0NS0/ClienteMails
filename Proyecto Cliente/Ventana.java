@@ -4,11 +4,11 @@ import java.awt.event.*;
 import java.util.regex.*;
 import java.util.*;
 public class Ventana extends JFrame{
+  Cliente cliente;
   ArrayList<String[]> nMails;
   ArrayList<JButton> listaBotones;
   ArrayList<String> listaContactos;
   String formato= new String("[\\w]+@[\\w]+");
-  Cliente cliente;
   JPanel login;
   JPanel encabezado;
   JPanel menu;
@@ -30,6 +30,7 @@ public class Ventana extends JFrame{
   JLabel titulo_contactos;
   JLabel titulo_nuevo;
   JLabel errorLogin;
+  JLabel errorEnviar;
   JButton botonlog;
   JButton botonMenuMails;
   JButton botonMenuEnviar;
@@ -47,8 +48,8 @@ public class Ventana extends JFrame{
   JTextField asunto;
   JTextField nombreNuevo;
   JTextField servidorNuevo;
-  public Ventana(Cliente cliente){
-    //Crea una nueva ventana
+  //Crea una nueva ventana
+  public Ventana(Cliente cliente, MiBaseDeDatos datos){
     this.cliente=cliente;
     setLayout(null);
     setSize(750,500);
@@ -101,6 +102,7 @@ public class Ventana extends JFrame{
         enviar.setVisible(true);
         contactos.setVisible(false);
         nuevoContact.setVisible(false);
+        errorEnviar.setVisible(false);
       }
     });
     menu.add(botonMenuEnviar);
@@ -199,7 +201,8 @@ public class Ventana extends JFrame{
         if(Pattern.matches(formato,nombre)){
           if(cliente.Verificar(nombre,contra)==0){
             listaContactos=cliente.getContactos();
-            nMails=cliente.getNuevosMails();
+            cliente.getNuevosMails();
+            nMails=cliente.cargarListaNuevos();
             iniciarComponentes();
             menu.setVisible(true);
             login.setVisible(false);
@@ -244,12 +247,12 @@ public class Ventana extends JFrame{
     // new Color(175,178,192)
     panelInteriorMail.setBounds(10,30,mails.getWidth()-20,mails.getHeight()-50);
     for(String[] x:nMails){
-      JButton boton = new JButton(x[0]+" "+x[1]);
+      JButton boton = new JButton(x[1]+" "+x[2]);
       boton.setForeground(Color.BLUE);
       boton.setFont(new Font("arial",Font.PLAIN,12));
       boton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          JOptionPane.showMessageDialog(null,x[0]+"\n"+x[1]+"\n"+x[2]+"\n");
+          JOptionPane.showMessageDialog(null,x[1]+"\n"+x[2]+"\n"+x[3]+"\n");
           boton.setForeground(Color.BLACK);
         }
       });
@@ -272,6 +275,15 @@ public class Ventana extends JFrame{
     titulo_enviar.setFont(new Font("arial",Font.PLAIN,15));
     enviar.add(titulo_enviar);
 
+    errorEnviar=new JLabel("ERROR AL ENVIAR");
+    errorEnviar.setLayout(null);
+    errorEnviar.setSize(150,20);
+    errorEnviar.setLocation(10,370);
+    errorEnviar.setForeground(Color.RED);
+    errorEnviar.setFont(new Font("arial",Font.PLAIN,15));
+    errorEnviar.setVisible(false);
+    enviar.add(errorEnviar);
+
     botonEnviar=new JButton("ENVIAR");
     botonEnviar.setBounds(200,370,90,20);
     botonEnviar.setFont(new Font("arial",Font.PLAIN,10));
@@ -284,6 +296,11 @@ public class Ventana extends JFrame{
           destino.setText("");
           asunto.setText("");
           cuerpo.setText("");
+          errorEnviar.setText("ENVIO EXITOSO");
+          errorEnviar.setForeground(new Color(83, 122, 0));
+          errorEnviar.setVisible(true);
+        }else{
+          errorEnviar.setVisible(true);
         }
       }
     });
@@ -373,12 +390,12 @@ public class Ventana extends JFrame{
     titulo_nuevo.setFont(new Font("arial",Font.PLAIN,15));
     nuevoContact.add(titulo_nuevo);
 
-    nombreNuevo=new JTextField("Nombre del contacto");
+    nombreNuevo=new JTextField("");
     nombreNuevo.setFont(new Font("arial",Font.PLAIN,10));
     nombreNuevo.setBounds(20,50,200,20);
     nuevoContact.add(nombreNuevo);
 
-    servidorNuevo=new JTextField("Servidor del contacto");
+    servidorNuevo=new JTextField("");
     servidorNuevo.setBounds(20,80,200,20);
     servidorNuevo.setFont(new Font("arial",Font.PLAIN,10));
     nuevoContact.add(servidorNuevo);
@@ -401,7 +418,7 @@ public class Ventana extends JFrame{
     botonGuardar.setBounds(200,360,100,30);
     botonGuardar.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-
+        cliente.guardarContacto(nombreNuevo.getText(),servidorNuevo.getText());
       }
     });
     nuevoContact.add(botonGuardar);

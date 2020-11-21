@@ -82,8 +82,7 @@ public class Cliente{
     }
   }
   //Obtiene los nuevos mails y los devuelve en una lista como remitente,asunto,texto;
-  public ArrayList<String[]> getNuevosMails(){
-    ArrayList<String[]> nMails= new ArrayList<String[]>();
+  public void getNuevosMails(){
     try{
     socket.getOut().println(Comandos.GETNEWMAILS + usuario);
     System.out.println("Cliente: GETNEWMAILS "+usuario);
@@ -101,37 +100,29 @@ public class Cliente{
           break;
         }
         if(todo.equals(Comandos.NO_MAILS)){
-          return null;}
+        }
         comando=todo.substring(0,Comandos.OK_GETNEWMAILS.length());
         if(comando.equals(Comandos.OK_GETNEWMAILS)){
           mensaje= todo.substring(Comandos.OK_GETNEWMAILS.length(),todo.length());
-        //  System.out.println(mensaje);
-
           int finalRemitente = mensaje.indexOf(" ");
           int finalAsunto = mensaje.indexOf(" ",finalRemitente+1);
           aux[0]=mensaje.substring(0,finalRemitente);
-          // System.out.println(aux[0]);
           aux[1]=mensaje.substring(finalRemitente+1,finalAsunto);
-          // System.out.println(aux[1]);
           aux[2]=mensaje.substring(finalAsunto+1,mensaje.length());
-          // System.out.println(aux[2]);
           if(mensaje.charAt(mensaje.length()-1)==('*')){
-            // System.out.println(Arrays.toString(aux));
-            nMails.add(aux);
+            miBaseDatos.guardarNuevoMensaje(usuario,aux[0],aux[1],aux[2]);
             break;
           }else{
-            // System.out.println(Arrays.toString(aux));
-            nMails.add(aux);
+            miBaseDatos.guardarNuevoMensaje(usuario,aux[0],aux[1],aux[2]);
           }
         }
-        // System.out.println(nMails);
       }
     }catch(Exception e){
       e.printStackTrace();
       System.out.println("Error al leer el comando Mails");
     }
-    return nMails;
   }
+
   public ArrayList<String> getContactos(){
     ArrayList<String> listaContactos=new ArrayList<String>();
     try{
@@ -147,10 +138,15 @@ public class Cliente{
           aux= aux.substring(Comandos.OK_CLIST.length(),aux.length());
           if(aux.charAt(aux.length()-1)==('*')){
             aux=aux.substring(0,aux.length()-1);
+            if(!miBaseDatos.existeContacto(usuario,aux)){
+              miBaseDatos.agregarContacto(usuario,aux);
+            }
             listaContactos.add(aux);
-            miBaseDatos.agregarContacto("javier","andrea@server2");
             break;
           }else{
+            if(!miBaseDatos.existeContacto(usuario,aux)){
+              miBaseDatos.agregarContacto(usuario,aux);
+            }
             listaContactos.add(aux);
           }
         }
@@ -160,7 +156,64 @@ public class Cliente{
     }
     return listaContactos;
   }
-  public boolean enviarMensaje(String destinatario,String asunto,String cuerpo){
-    return true;
+  public boolean enviarMensaje(String destinatarios,String asunto,String cuerpo){
+    try{
+        System.out.println("CLIENTE: SEND MAIL");
+        socket.getOut().println("SEND MAIL");
+        String[] destino=destinatarios.split(" ");
+        for(String x:destino){
+          if(!x.equals(destino[destino.length-1])){
+            System.out.println("Cliente: MAIL TO "+x);
+            socket.getOut().println("MAIL TO "+x);
+          }else{
+            System.out.println("Cliente: MAIL TO "+x+"*");
+            socket.getOut().println("MAIL TO "+x+"*");
+          }
+        }
+        System.out.println("Cliente: MAIL SUBJECT "+ asunto);
+        socket.getOut().println("MAIL SUBJECT "+ asunto);
+        System.out.println("Cliente: MAIL BODY "+ cuerpo);
+        socket.getOut().println("MAIL BODY "+ cuerpo);
+        System.out.println("Cliente: END SEND MAIL");
+        socket.getOut().println("END SEND MAIL");
+        String respuesta=socket.getIn().readLine();
+        System.out.println("Servidor: "+respuesta);
+        if(respuesta.equals(Comandos.OK_SEND)){
+          System.out.println("Correo enviado exitosamente");
+          return true;
+        }else{
+          System.out.println("Erro al envia correo");
+          return false;
+        }
+    }catch(Exception e){
+      e.printStackTrace();
+      System.out.println("Error al enviar un mensaje");
+      return false;
+    }
+  }
+  public boolean guardarContacto(String nombreNuevo,String servidorNuevo){
+    try{
+      String nuevo=nombreNuevo+"@"+servidorNuevo;
+      socket.getOut().println("NEWCONT "+nuevo);
+      String respuesta=socket.getIn().readLine();
+      System.out.println("Cliente: "+respuesta);
+      String contacto= respuesta.substring(12,respuesta.length());
+      String aux=respuesta.substring(0,11);
+      System.out.println(aux+"+");
+      if(aux.equals(Comandos.OK_NEWCONT)){
+        System.out.println("Contacto "+contacto + " Guardado exitosamente");
+        return true;
+      }else{
+        System.out.println("Error al guardar contacto");
+        return false;
+      }
+    }catch(Exception e){
+      System.out.println("Fallo enviando el contacto al servidor");
+      e.printStackTrace();
+      return false;
+    }
+  }
+  public ArrayList<String[]> cargarListaNuevos(){
+    return miBaseDatos.cargarListaNuevos(usuario);
   }
 }

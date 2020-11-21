@@ -4,20 +4,23 @@ import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.regex.*;
 import java.util.*;
 
 public class ServidorPrueba {
     static int port = 1200;
     public static void main(String[] args) {
-
+        String[] auxiliares;
+        String formato= new String("[\\w]+@[\\w]+");
         HashMap<String, String> usuarios = new HashMap<String, String>();
         HashMap<String, String> servidores = new HashMap<String, String>();
         usuarios.put("javier", "1234");
         usuarios.put("joaquin", "alonso19");
         servidores.put("oscar@", "127.0.0.2");
         servidores.put("rodrigo@", "127.0.0.3");
-        servidores.put("andres@","127.9.9.9");
-        servidores.put("juan@","179.2.0.0");
+        servidores.put("antonio@","200.20.0.27");
+        servidores.put("isaura@","2.3.4.5");
+        servidores.put("pedro@","sever23");
 
         try {
           ServerSocket server = new ServerSocket(port);
@@ -34,9 +37,9 @@ public class ServidorPrueba {
             PrintWriter out = new PrintWriter(socketClient.getOutputStream(), true);
 
             //out.println("Bienvenido al servidor de cc2 :)");
-
+            String usa;
             while(true){
-              String usa = in.readLine();
+              usa = in.readLine();
               if(usa != null){
                 System.out.println("Cliente: " + usa);
                 String[] flag = usa.split(" ");
@@ -106,24 +109,67 @@ public class ServidorPrueba {
                 }else if((flag[0].equals("SEND"))){
                   ArrayList<String> contactos= new ArrayList<String>();
                   String contacto;
+                  int contador=0;
                   while(true){
                     contacto=in.readLine();
-                    contactos.add(contacto);
-                    System.out.println(contacto);
-                    if(contacto.charAt(contacto.length()-1) == '*'){
+                    char ultimo=contacto.charAt(contacto.length()-1);
+                    if( ultimo == '*'){
                       System.out.println("Recibido ultimo contacto");
-                      break;
+                      contacto=contacto.substring(9,contacto.length()-1);
+                      System.out.println("\""+contacto+"\"");
+                      if(Pattern.matches(formato,contacto)){
+                        break;
+                      }else{
+                        System.out.println(contacto+" formato invalido");
+                        contador+=1;
+                        break;
+                      }
+                    }else{
+                      contacto=contacto.substring(9,contacto.length());
+                      System.out.println("\""+contacto+"\"");
+                      if(Pattern.matches(formato,contacto)){
+                        break;
+                      }else{
+                        System.out.println(contacto+" formato invalido");
+                        contador+=1;
+                        break;
+                      }
                     }
+
+                    // if(Pattern.matches(formato,contacto)){
+                    //   contactos.add(contacto);
+                    //   System.out.println(contacto);
+                    //   if( ultimo == '*'){
+                    //     System.out.println("Recibido ultimo contacto");
+                    //     break;
+                    //   }
+                    // }else{
+                    //   contador+=1;
+                    //   System.out.println(contacto+" formato invalido");
+                    //   if(contacto.charAt(contacto.length()-1) == '*'){
+                    //     System.out.println("Recibido ultimo contacto");
+                    //     break;
+                    //   }
+                    // }
                   }
                   String asunto= in.readLine();
                   String cuerpo= in.readLine();
                   String enviar= in.readLine();
-                  System.out.println("Servidor: OK SEND MAIL");
-                  out.println("OK SEND MAIL");
+                  if(contador==0){
+                    System.out.println("Servidor: OK SEND MAIL");
+                    out.println("OK SEND MAIL");
+                  }else{
+                    System.out.println("Servidor: "+Comandos.SEND_ERROR);
+                    System.out.println(contador+" contactos con formato invalido");
+                    out.println(Comandos.SEND_ERROR);
+                  }
 
                 }else if ((flag[0].equals("NEWCONT"))){
                   String contacto=flag[1];
                   System.out.println(contacto);
+                  auxiliares=contacto.split("@");
+                  servidores.put(auxiliares[0]+"@",auxiliares[1]);
+                  System.out.println("Se guardo el contacto "+contacto);
                   out.println("OK NEWCONT "+contacto);
                 }else{
                   System.out.println("INVALID COMMAND ERROR");

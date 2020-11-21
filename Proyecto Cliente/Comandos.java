@@ -11,7 +11,7 @@ public class Comandos{
   static final String MAIL_SUBJECT = new String("MAIL SUBJECT ");
   static final String MAIL_BODY = new String("MAIL BODY ");
   static final String END_SEND = new String("END SEND MAIL ");
-  static final String OK_SEND = new String("OK SEND MAIL ");
+  static final String OK_SEND = new String("OK SEND MAIL");
   static final String NEWCONTACT = new String("NEWCONT ");
   static final String OK_NEWCONT= new String("OK NEWCONT ");
   static final String LOGOUT = new String("LOGOUT");
@@ -20,7 +20,7 @@ public class Comandos{
   static final String OK_NOOP = new String("OK NOOP");
   static final String LOGIN_ERROR = new String("LOGIN ERROR ");
   static final String CLIST_ERROR = new String("CLIST ERROR ");
-  static final String SEND_ERROR = new String("SEND ERROR ");
+  static final String SEND_ERROR = new String("SEND ERROR");
   static final String NEWCONT_ERROR = new String("NEWCONT ERROR ");
   static final String CHECK_CONTACT = new String("CHECK CONTACT ");
   static final String CHECK_ERROR = new String("CHECK ERROR ");

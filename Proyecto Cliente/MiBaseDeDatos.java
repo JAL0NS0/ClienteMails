@@ -1,14 +1,19 @@
 import db.*;
+import java.util.*;
 public class MiBaseDeDatos{
   DB miBaseDatos;
   String query;
   public MiBaseDeDatos(String direccion){
+    conectar();
+  }
+  public void conectar(){
     try{
  		miBaseDatos = new DB("tablaPrueba.db");//create one DB connection object
  		if(!miBaseDatos.connect()){//create actual connection to db
  			System.out.println("Error en db"+miBaseDatos.getError());
  			System.exit(0);
  		}
+    System.out.println("Conectado");
 
    	}catch(Exception e){
    						System.out.println(e.getClass());
@@ -37,9 +42,11 @@ public class MiBaseDeDatos{
   }
   //Devuelve true si el servidor se encuentra en la tabla ipServidor;
   public boolean buscarServidor(String nomServidor){
+    conectar();
     query="SELECT COUNT(*) as contador FROM ipServidor WHERE servidor='%s';";
     query= String.format(query,nomServidor);
     try{
+      System.out.println(query);
       if(miBaseDatos.executeQuery(query,"respuesta")){
         miBaseDatos.next("respuesta");
         String aparece = miBaseDatos.getString("contador","respuesta");
@@ -110,7 +117,6 @@ public class MiBaseDeDatos{
     }
   }
   public void agregarContacto(String usuario,String contactoN){
-
     query="INSERT INTO contactos (nombre,contacto) VALUES ('%s','%s');";
     query= String.format(query,usuario,contactoN);
     System.out.println(query);
@@ -135,5 +141,45 @@ public class MiBaseDeDatos{
       System.out.println(e.getMessage());
     }
   }
-
+  public void guardarNuevoMensaje(String receptor,String emisor,String asunto,String mensaje){
+    query="INSERT INTO mensajes (destinatario,remitente,asunto,cuerpo,leido) VALUES ('%s','%s','%s','%s',0);";
+    query= String.format(query,receptor,emisor,asunto,mensaje);
+    System.out.println(query);
+    try{
+      if(miBaseDatos.executeNonQuery(query)){
+      System.out.println("Mensaje guardado exitosamente");
+      }else{
+        System.out.println("No se pudo guardar el mensaje");
+      }
+    }catch(Exception e){
+      System.out.println(e.getClass());
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+    }
+  }
+  public ArrayList<String[]> cargarListaNuevos(String usuario){
+    ArrayList<String[]> nMails= new ArrayList<String[]>();
+    query="select id,remitente,asunto,cuerpo from mensajes where leido=0 and destinatario='%s';";
+    query= String.format(query,usuario);
+    System.out.println(query);
+    try{
+      if(miBaseDatos.executeQuery(query,"respuesta")){
+        while(miBaseDatos.next("respuesta")){
+          String[] aux= new String[4];
+          aux[0]=miBaseDatos.getString("id","respuesta");
+          aux[1]=miBaseDatos.getString("remitente","respuesta");
+          aux[2]=miBaseDatos.getString("asunto","respuesta");
+          aux[3]=miBaseDatos.getString("cuerpo","respuesta");
+          nMails.add(aux);
+        }
+      }else{
+        System.out.println("No se pudo hacer la consulta");
+      }
+    }catch(Exception e){
+      System.out.println(e.getClass());
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+    }
+    return nMails;
+  }
 }
