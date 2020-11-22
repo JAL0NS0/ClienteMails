@@ -8,7 +8,7 @@ import java.util.regex.*;
 import java.util.*;
 
 public class ServidorPrueba {
-    static int port = 1200;
+    static int port = 1400;
     public static void main(String[] args) {
         String[] auxiliares;
         String formato= new String("[\\w]+@[\\w]+");

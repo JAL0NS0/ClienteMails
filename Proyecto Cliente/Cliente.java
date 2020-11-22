@@ -1,9 +1,11 @@
 import java.util.*;
 import java.net.*;
 import java.io.*;
+import java.text.SimpleDateFormat;
+import javax.swing.event.ListSelectionEvent;
 
 public class Cliente{
-  static final int PUERTO=1200;
+  static final int PUERTO=1400;
   String ipservidor;
   String respuesta;
   MiSocket socket;
@@ -33,23 +35,24 @@ public class Cliente{
           System.out.println("Error al crear el socket1");
         }
         try{
-          socket.getOut().println(Comandos.LOGIN + usuario+" "+contrasena);
+          System.out.println("Cliente: "+Comandos.LOGIN + usuario+" "+contrasena);
+          socket.getOut().writeUTF(Comandos.LOGIN + usuario+" "+contrasena);
         }catch(Exception e){
           System.out.println("Error al hablar");
         }
         try{
-          respuesta= socket.getIn().readLine();
+          respuesta= socket.getIn().readUTF();
           System.out.println("Servidor: "+respuesta);
         }catch(Exception e){
           System.out.println("Error al oir");
         }
         if(respuesta.equals(Comandos.OK_LOGIN)){
           return 0;
-        }else if(respuesta.substring(0,Comandos.LOGIN_ERROR.length()).equals(Comandos.LOGIN_ERROR)){
-          if(respuesta.substring(Comandos.LOGIN_ERROR.length(),respuesta.length()).equals("101")) {
+        }else if(respuesta.substring(0,12).equals(Comandos.LOGIN_ERROR)){
+          if(respuesta.substring(12,respuesta.length()).equals("101")) {
             miBaseDatos.cerrarConexion();
             return 2;
-          }else if(respuesta.substring(Comandos.LOGIN_ERROR.length(),respuesta.length()).equals("102")) {
+          }else if(respuesta.substring(12,respuesta.length()).equals("102")) {
             miBaseDatos.cerrarConexion();
             return 3;
           }
@@ -61,9 +64,9 @@ public class Cliente{
   //Hace un log out con el servidor
   public boolean cerrarSecion(){
     try{
-      socket.out.println(Comandos.LOGOUT);
+      socket.getOut().writeUTF(Comandos.LOGOUT);
       System.out.println("Cliente: "+Comandos.LOGOUT);
-      String respuesta=socket.getIn().readLine();
+      String respuesta=socket.getIn().readUTF();
       System.out.println("Servidor: "+respuesta);
       if(respuesta.equals(Comandos.OK_LOGOUT)){
         miBaseDatos.cerrarConexion();
@@ -83,7 +86,7 @@ public class Cliente{
   //Obtiene los nuevos mails y los devuelve en una lista como remitente,asunto,texto;
   public void getNuevosMails(){
     try{
-    socket.getOut().println(Comandos.GETNEWMAILS + usuario);
+    socket.getOut().writeUTF(Comandos.GETNEWMAILS + usuario);
     System.out.println("Cliente: GETNEWMAILS "+usuario);
     String mensaje="";
     String todo;
@@ -94,7 +97,7 @@ public class Cliente{
     String submensaje;
     while(true){
         String[] aux= new String[3];
-        todo=socket.getIn().readLine();
+        todo=socket.getIn().readUTF();
         System.out.println("Servidor: "+todo);
         if(todo==null){
           break;
@@ -129,12 +132,12 @@ public class Cliente{
   public ArrayList<String> getContactos(){
     ArrayList<String> listaContactos=new ArrayList<String>();
     try{
-    socket.getOut().println(Comandos.CLIST + usuario);
+    socket.getOut().writeUTF(Comandos.CLIST + usuario);
     System.out.println("Cliente: CLIST "+usuario);
     String aux;
     String comando;
     while(true){
-        aux=socket.in.readLine();
+        aux=socket.getIn().readUTF();
         comando=aux.substring(0,Comandos.OK_CLIST.length());
         System.out.println("Servidor: "+aux);
         if(comando.equals(Comandos.OK_CLIST)){
@@ -162,24 +165,26 @@ public class Cliente{
   public boolean enviarMensaje(String destinatarios,String asunto,String cuerpo){
     try{
         System.out.println("CLIENTE: SEND MAIL");
-        socket.getOut().println("SEND MAIL");
+        socket.getOut().writeUTF("SEND MAIL");
         String[] destino=destinatarios.split(" ");
         for(String x:destino){
           if(!x.equals(destino[destino.length-1])){
             System.out.println("Cliente: MAIL TO "+x);
-            socket.getOut().println("MAIL TO "+x);
+            socket.getOut().writeUTF("MAIL TO "+x);
           }else{
-            System.out.println("Cliente: MAIL TO "+x+"*");
-            socket.getOut().println("MAIL TO "+x+"*");
+            System.out.println("Cliente: MAIL TO "+x+" *");
+            socket.getOut().writeUTF("MAIL TO "+x+ " *");
           }
         }
         System.out.println("Cliente: MAIL SUBJECT "+ asunto);
-        socket.getOut().println("MAIL SUBJECT "+ asunto);
+        socket.getOut().writeUTF("MAIL SUBJECT "+ asunto);
+        Thread.sleep(20);
         System.out.println("Cliente: MAIL BODY "+ cuerpo);
-        socket.getOut().println("MAIL BODY "+ cuerpo);
+        socket.getOut().writeUTF("MAIL BODY "+ cuerpo);
+        Thread.sleep(20);
         System.out.println("Cliente: END SEND MAIL");
-        socket.getOut().println("END SEND MAIL");
-        String respuesta=socket.getIn().readLine();
+        socket.getOut().writeUTF("END SEND MAIL");
+        String respuesta=socket.getIn().readUTF();
         System.out.println("Servidor: "+respuesta);
         if(respuesta.equals(Comandos.OK_SEND)){
           System.out.println("Correo enviado exitosamente");
@@ -197,11 +202,13 @@ public class Cliente{
   public boolean guardarContacto(String nombreNuevo,String servidorNuevo){
     try{
       String nuevo=nombreNuevo+"@"+servidorNuevo;
-      socket.getOut().println("NEWCONT "+nuevo);
-      String respuesta=socket.getIn().readLine();
-      System.out.println("Cliente: "+respuesta);
+      socket.getOut().writeUTF("NEWCONT "+nuevo);
+      System.out.println("Cliente: NEWCONT "+nuevo);
+      String respuesta=socket.getIn().readUTF();
+      System.out.println("Servidor: "+respuesta);
       String contacto= respuesta.substring(11,respuesta.length());
       String aux=respuesta.substring(0,11);
+      System.out.println(aux);
       if(aux.equals(Comandos.OK_NEWCONT)){
         System.out.println("Contacto "+contacto + " Guardado exitosamente");
         miBaseDatos.agregarContacto(usuario,nuevo);
@@ -217,9 +224,15 @@ public class Cliente{
     }
   }
   public String[] cargarListaNuevos(){
-    return miBaseDatos.cargarListaNuevos(usuario);
+    return miBaseDatos.cargarListaNuevos(usuario,"0");
+  }
+  public String[] cargarListaLeidos(){
+    return miBaseDatos.cargarListaNuevos(usuario,"1");
   }
   public void marcarLeido(String id){
     miBaseDatos.marcarLeido(usuario,id);
+  }
+  public String[] getMensajeCompleto(String id){
+    return miBaseDatos.getMensaje(id);
   }
 }

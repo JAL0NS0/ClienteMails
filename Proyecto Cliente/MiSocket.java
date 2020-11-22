@@ -5,19 +5,18 @@ public class MiSocket{
   ArrayList<String> nMails= new ArrayList<String>();
   Socket conexion;
   InputStreamReader isr;
-  BufferedReader in;
-  PrintWriter out;
+  DataInputStream in;
+  DataOutputStream out;
   public MiSocket(String ip, int puerto) throws Exception{
     conexion= new Socket(ip,puerto);
   }
-  public BufferedReader getIn()throws Exception{
-    isr = new InputStreamReader(conexion.getInputStream());
-    in = new BufferedReader(isr);
+  public DataInputStream getIn()throws Exception{
+    in = new DataInputStream(conexion.getInputStream());
     return in;
   }
 
-  public PrintWriter getOut()throws Exception{
-    out = new PrintWriter(conexion.getOutputStream(), true);
+  public DataOutputStream getOut()throws Exception{
+    out = new DataOutputStream(conexion.getOutputStream());
     return out;
   }
   public void closeIn()throws Exception{

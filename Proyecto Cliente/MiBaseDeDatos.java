@@ -155,11 +155,11 @@ public class MiBaseDeDatos{
       e.printStackTrace();
     }
   }
-  public String[] cargarListaNuevos(String usuario){
+  public String[] cargarListaNuevos(String usuario,String leido){
     Integer numero=contarMensajes(usuario,0);
     String[] nMails= new String[numero];
-    query="select id,remitente,asunto,cuerpo from mensajes where leido=0 and destinatario='%s';";
-    query= String.format(query,usuario);
+    query="select id,remitente,asunto,cuerpo from mensajes where leido=%s and destinatario='%s';";
+    query= String.format(query,leido,usuario);
     try{
       if(numero==0){
         return nMails;
@@ -219,5 +219,28 @@ public class MiBaseDeDatos{
       return 0;
     }
   }
-
+  public String[] getMensaje(String id){
+    String[] mensajeAImprimir= new String[4];
+    query="select * from mensajes where id='%s';";
+    query=String.format(query,id);
+    System.out.println(query);
+    try{
+      if(miBaseDatos.executeQuery(query,"respuesta")){
+        miBaseDatos.next("respuesta");
+        mensajeAImprimir[0]=miBaseDatos.getString("id","respuesta");
+        mensajeAImprimir[1]=miBaseDatos.getString("remitente","respuesta");
+        mensajeAImprimir[2]=miBaseDatos.getString("asunto","respuesta");
+        mensajeAImprimir[3]=miBaseDatos.getString("cuerpo","respuesta");
+        return mensajeAImprimir;
+      }else{
+        System.out.println("No se pudo hacer la consulta");
+        return mensajeAImprimir;
+      }
+    }catch(Exception e){
+      System.out.println(e.getClass());
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+      return mensajeAImprimir;
+    }
+  }
 }

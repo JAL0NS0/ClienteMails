@@ -3,18 +3,24 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.regex.*;
 import java.util.*;
+import javax.swing.event.ListSelectionEvent;
 public class Ventana extends JFrame{
-  String[] nMails;
   JList<String> listaMensajes;
+  JList<String> listaMensajesLeidos;
   Cliente cliente;
-  JScrollPane scrollMail;
   ArrayList<String> listaContactos;
+  String[] listaContactos1;
+  JScrollPane scrollMail;
+  String[] nMails;
+  String[] nMailsLeidos;
+  JScrollPane scrollMailLeidos;
   String formato= new String("[\\w]+@[\\w]+");
   JPanel login;
   JPanel encabezado;
   JPanel menu;
   JPanel mails;
   JPanel panelInteriorMail;
+  JPanel panelInteriorMailLeidos;
   JPanel enviar;
   JPanel contactos;
   JPanel panelInteriorContactos;
@@ -29,6 +35,7 @@ public class Ventana extends JFrame{
   JLabel instruccionNuevoServidor;
   JLabel titulo;
   JLabel titulo_mail;
+  JLabel titulo_mailLeidos;
   JLabel titulo_enviar;
   JLabel titulo_contactos;
   JLabel titulo_nuevo;
@@ -43,10 +50,12 @@ public class Ventana extends JFrame{
   JButton botonNuevo;
   JButton botonEnviar;
   JButton botonRecargarMails;
+  JButton botonRecargarMailsLeidos;
   JButton botonCancelar;
   JButton botonGuardar;
   JTextArea cuerpo;
   JTextArea mensajeCompleto;
+  JTextArea mensajeCompletoLeido;
   JTextField usuario_server;
   JPasswordField contrasena;
   JTextField destino;
@@ -146,6 +155,7 @@ public class Ventana extends JFrame{
     menu.add(botonMenuSalir);
 
     cargarMails();
+    // cargarMailsLeidos();
     cargarEnviar();
     cargarContacts();
     cargarNuevoContacto();
@@ -210,6 +220,7 @@ public class Ventana extends JFrame{
             listaContactos=cliente.getContactos();
             cliente.getNuevosMails();
             nMails=cliente.cargarListaNuevos();
+            nMailsLeidos=cliente.cargarListaLeidos();
             iniciarComponentes();
             menu.setVisible(true);
             login.setVisible(false);
@@ -243,7 +254,6 @@ public class Ventana extends JFrame{
     mails.setVisible(true);
     this.getContentPane().add(mails);
 
-
     titulo_mail= new JLabel("MAILS NUEVOS");
     titulo_mail.setBounds(mails.getWidth()/2-60, 10, 120,20);
     titulo_mail.setFont(new Font("arial",Font.PLAIN,15));
@@ -252,24 +262,115 @@ public class Ventana extends JFrame{
     listaMensajes= new JList<String>(nMails);
     listaMensajes.setVisibleRowCount​(5);
     listaMensajes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    // listaMensajes.addListSelectionListener(new ListSelectionEvent(){
-    //   public void valueChanged(ListSElectionEvent arg0){
-    //     List<String> texto= listaMensajes.getSelectedValuesList();
-    //     for(String x:text){
-    //       String id=x.split(".");
-    //       System.out.println();
-    //     }
-    //   }
-    // });
+    listaMensajes.addMouseListener(new MouseAdapter(){
+          @Override
+          public void mouseClicked(MouseEvent e) {
+              String s = (String) listaMensajes.getSelectedValue();
+              System.out.println("Value Selected: " + s.toString());
+              String[] completo=s.split(" ");
+              String q = completo[0];
+              q= q.substring(0,q.length()-1);
+              System.out.println(q);
+              String[] mensaje=cliente.getMensajeCompleto(q);
+              mensajeCompleto.setText(mensaje[0]+". "+mensaje[1]+"\n\n"+mensaje[2]+"\n\n"+mensaje[3]);
+              cliente.marcarLeido(mensaje[0]);
+          }
+    });
+
     scrollMail= new JScrollPane(listaMensajes);
     scrollMail.setLocation(10,30);
     scrollMail.setSize(mails.getWidth()/2+50,mails.getHeight()-50);
     mails.add(scrollMail);
 
     mensajeCompleto= new JTextArea();
-    mensajeCompleto.setSize(mails.getWidth()-(scrollMail.getWidth()+scrollMail.getX()+20),scrollMail.getHeight());
+    mensajeCompleto.setLineWrap(true);
+    mensajeCompleto.setWrapStyleWord(true);
+    mensajeCompleto.setMargin( new Insets(10,10,10,10) );
+    mensajeCompleto.setSize(mails.getWidth()-(scrollMail.getWidth()+scrollMail.getX()+20),scrollMail.getHeight()-30);
     mensajeCompleto.setLocation(scrollMail.getWidth()+scrollMail.getX()+10,scrollMail.getY());
+    mensajeCompleto.setEnabled(false);
+    mensajeCompleto.setDisabledTextColor​(Color.BLACK);
+    mensajeCompleto.setFont(new Font("arial",Font.PLAIN,12));
+    mensajeCompleto.setVisible(true);
     mails.add(mensajeCompleto);
+
+    listaMensajesLeidos= new JList<String>(nMailsLeidos);
+    listaMensajesLeidos.setVisibleRowCount​(5);
+    listaMensajesLeidos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    listaMensajesLeidos.addMouseListener(new MouseAdapter(){
+          @Override
+          public void mouseClicked(MouseEvent e) {
+              String s = (String) listaMensajesLeidos.getSelectedValue();
+              System.out.println("Value Selected: " + s.toString());
+              String[] completo=s.split(" ");
+              String q = completo[0];
+              q= q.substring(0,q.length()-1);
+              System.out.println(q);
+              String[] mensaje=cliente.getMensajeCompleto(q);
+              mensajeCompletoLeido.setText(mensaje[0]+". "+mensaje[1]+"\n\n"+mensaje[2]+"\n\n"+mensaje[3]);
+              cliente.marcarLeido(mensaje[0]);
+          }
+    });
+    scrollMailLeidos= new JScrollPane(listaMensajesLeidos);
+    scrollMailLeidos.setLocation(10,30);
+    scrollMailLeidos.setSize(mails.getWidth()/2+50,mails.getHeight()-50);
+    scrollMailLeidos.setVisible(false);
+    mails.add(scrollMailLeidos);
+
+    mensajeCompletoLeido= new JTextArea();
+    mensajeCompletoLeido.setLineWrap(true);
+    mensajeCompletoLeido.setWrapStyleWord(true);
+    mensajeCompletoLeido.setMargin( new Insets(10,10,10,10) );
+    mensajeCompletoLeido.setSize(mails.getWidth()-(scrollMailLeidos.getWidth()+scrollMailLeidos.getX()+20),scrollMailLeidos.getHeight()-30);
+    mensajeCompletoLeido.setLocation(scrollMailLeidos.getWidth()+scrollMailLeidos.getX()+10,scrollMailLeidos.getY());
+    mensajeCompletoLeido.setEnabled(false);
+    mensajeCompletoLeido.setDisabledTextColor​(Color.BLACK);
+    mensajeCompletoLeido.setFont(new Font("arial",Font.PLAIN,12));
+    mensajeCompletoLeido.setVisible(false);
+    mails.add(mensajeCompletoLeido);
+
+    botonRecargarMails=new JButton("Nuevos");
+    botonRecargarMails.setSize(mensajeCompleto.getWidth()/2,20);
+    botonRecargarMails.setLocation(mensajeCompleto.getX(),mensajeCompleto.getY()+mensajeCompleto.getHeight()+5);
+    botonRecargarMails.setFont(new Font("arial",Font.PLAIN,10));
+    botonRecargarMails.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        cargarMailsNuevos();
+      } } ) ;
+    mails.add(botonRecargarMails);
+
+    botonRecargarMailsLeidos=new JButton("Leidos");
+    botonRecargarMailsLeidos.setSize(mensajeCompleto.getWidth()/2,20);
+    botonRecargarMailsLeidos.setLocation(mensajeCompleto.getX()+botonRecargarMails.getWidth()+5,mensajeCompleto.getY()+mensajeCompleto.getHeight()+5);
+    botonRecargarMailsLeidos.setFont(new Font("arial",Font.PLAIN,10));
+    botonRecargarMailsLeidos.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        cargarMailsLeidos();
+  } } ) ;
+    mails.add(botonRecargarMailsLeidos);
+
+}
+  public void cargarMailsLeidos(){
+    nMailsLeidos=cliente.cargarListaLeidos();
+    titulo_mail.setText("MAILS LEIDOS");
+    listaMensajesLeidos.setListData​(nMailsLeidos);
+    listaMensajesLeidos.updateUI();
+    scrollMailLeidos.setVisible(true);
+    scrollMail.setVisible(false);
+    mensajeCompletoLeido.setVisible(true);
+    mensajeCompleto.setVisible(false);
+
+  }
+  public void cargarMailsNuevos(){
+    nMails=cliente.cargarListaNuevos();
+    titulo_mail.setText("MAILS LEIDOS");
+    listaMensajes.setListData​(nMails);
+    listaMensajes.updateUI();
+    scrollMail.setVisible(true);
+    scrollMailLeidos.setVisible(false);
+    mensajeCompleto.setVisible(true);
+    mensajeCompletoLeido.setVisible(false);
+
   }
   public void cargarEnviar(){
     enviar=new JPanel();
