@@ -4,10 +4,10 @@ import java.awt.event.*;
 import java.util.regex.*;
 import java.util.*;
 public class Ventana extends JFrame{
-  JScrollPane scrollMail;
+  String[] nMails;
+  JList<String> listaMensajes;
   Cliente cliente;
-  ArrayList<String[]> nMails;
-  ArrayList<JButton> listaBotones;
+  JScrollPane scrollMail;
   ArrayList<String> listaContactos;
   String formato= new String("[\\w]+@[\\w]+");
   JPanel login;
@@ -25,6 +25,8 @@ public class Ventana extends JFrame{
   JLabel instruccionDestinatario;
   JLabel instruccionAsunto;
   JLabel instruccionCuerpo;
+  JLabel instruccionNuevoNombre;
+  JLabel instruccionNuevoServidor;
   JLabel titulo;
   JLabel titulo_mail;
   JLabel titulo_enviar;
@@ -32,6 +34,7 @@ public class Ventana extends JFrame{
   JLabel titulo_nuevo;
   JLabel errorLogin;
   JLabel errorEnviar;
+  JLabel errorGuardar;
   JButton botonlog;
   JButton botonMenuMails;
   JButton botonMenuEnviar;
@@ -118,6 +121,7 @@ public class Ventana extends JFrame{
         enviar.setVisible(false);
         contactos.setVisible(true);
         nuevoContact.setVisible(false);
+        errorGuardar.setVisible(false);
       }
     });
     menu.add(botonMenuContactos);
@@ -238,51 +242,75 @@ public class Ventana extends JFrame{
     mails.setVisible(true);
     this.getContentPane().add(mails);
 
+
     titulo_mail= new JLabel("MAILS NUEVOS");
     titulo_mail.setBounds(mails.getWidth()/2-60, 10, 120,20);
     titulo_mail.setFont(new Font("arial",Font.PLAIN,15));
     mails.add(titulo_mail);
 
-    panelInteriorMail=new JPanel();
-    panelInteriorMail.setLayout(new GridLayout(21,1));
-    panelInteriorMail.setBackground(new Color(175,178,192));
-    panelInteriorMail.setBounds(10,30,mails.getWidth()-20,mails.getHeight()-50);
-    for(String[] x:nMails){
-      JButton boton = new JButton(x[1]+" "+x[2]);
-      boton.setForeground(Color.BLUE);
-      boton.setFont(new Font("arial",Font.PLAIN,12));
-      boton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          JOptionPane.showMessageDialog(null,x[1]+"\n"+x[2]+"\n"+x[3]+"\n");
-          boton.setForeground(Color.BLACK);
-          cliente.marcarLeido(x[0]);
-          panelInteriorMail.setSize(mails.getWidth()-20,panelInteriorMail.getHeight()+10);
-          panelInteriorMail.updateUI();
-        }
-      });
-      panelInteriorMail.add(boton);
-    }
 
-    // scrollMail=new JScrollPane();
-    // scrollMail.setLocation(10,30);
-    // scrollMail.setSize(mails.getWidth()-20,mails.getHeight()-40);
-    // mails.add(scrollMail);
-
-    mails.add(panelInteriorMail);
+    listaMensajes= new JList<String>(nMails);
+    listaMensajes.setVisibleRowCount​(5);
+    scrollMail= new JScrollPane(listaMensajes);
+    scrollMail.setLocation(10,30);
+    scrollMail.setSize(mails.getWidth()/2+50,mails.getHeight()-50);
+    mails.add(scrollMail);
   }
   public void cargarEnviar(){
     enviar=new JPanel();
     enviar.setLayout(null);
     enviar.setBackground(new Color(175,178,192));
-    enviar.setSize(this.getWidth()-menu.getWidth(),this.getHeight()-encabezado.getHeight());
+    enviar.setSize(this.getWidth()-(menu.getWidth()),this.getHeight()-(encabezado.getHeight()+30));
     enviar.setLocation(menu.getWidth(),encabezado.getHeight());
     enviar.setVisible(false);
     this.getContentPane().add(enviar);
 
     titulo_enviar=new JLabel("ENVIAR CORREO");
-    titulo_enviar.setBounds(enviar.getWidth()/2-150, 10 , 300,18);
-    titulo_enviar.setFont(new Font("arial",Font.PLAIN,15));
+    titulo_enviar.setSize(150,30);
+    titulo_enviar.setLocation(enviar.getWidth()/2-titulo_enviar.getWidth()/2,10);
+    titulo_enviar.setFont(new Font("arial",Font.PLAIN,20));
     enviar.add(titulo_enviar);
+
+    destino=new JTextField("");
+    destino.setFont(new Font("arial",Font.PLAIN,12));
+    destino.setSize(350,20);
+    destino.setLocation(enviar.getWidth()/2-destino.getWidth()/2,titulo_enviar.getY()+titulo_enviar.getHeight()+25);
+    enviar.add(destino);
+
+    instruccionDestinatario= new JLabel("Ingresar destinatario(s) usuario@servidor");
+    instruccionDestinatario.setLayout(null);
+    instruccionDestinatario.setSize(300,20);
+    instruccionDestinatario.setLocation(destino.getX(),destino.getY()-instruccionDestinatario.getHeight());
+    instruccionDestinatario.setFont(new Font("arial",Font.PLAIN,12));
+    enviar.add(instruccionDestinatario);
+
+    asunto=new JTextField("");
+    asunto.setFont(new Font("arial",Font.PLAIN,12));
+    asunto.setSize(destino.getWidth(),destino.getHeight());
+    asunto.setLocation(destino.getX(),destino.getY()+40);
+    enviar.add(asunto);
+
+    instruccionAsunto= new JLabel("Ingresar Asunto");
+    instruccionAsunto.setLayout(null);
+    instruccionAsunto.setSize(200,20);
+    instruccionAsunto.setLocation(asunto.getX(),asunto.getY()-20);
+    instruccionAsunto.setFont(new Font("arial",Font.PLAIN,12));
+    enviar.add(instruccionAsunto);
+
+    cuerpo= new JTextArea("");
+    cuerpo.setLineWrap(true);
+    cuerpo.setWrapStyleWord(true);
+    cuerpo.setFont(new Font("arial",Font.PLAIN,12));
+    cuerpo.setSize(destino.getWidth(),200);
+    cuerpo.setLocation(asunto.getX(),asunto.getY()+40);
+    enviar.add(cuerpo);
+
+    instruccionCuerpo= new JLabel("Ingresar mensaje");
+    instruccionCuerpo.setLayout(null);
+    instruccionCuerpo.setSize(200,20);
+    instruccionCuerpo.setLocation(cuerpo.getX(),cuerpo.getY()-20);
+    instruccionCuerpo.setFont(new Font("arial",Font.PLAIN,12));
+    enviar.add(instruccionCuerpo);
 
     errorEnviar=new JLabel("ERROR AL ENVIAR");
     errorEnviar.setLayout(null);
@@ -292,6 +320,7 @@ public class Ventana extends JFrame{
     errorEnviar.setFont(new Font("arial",Font.PLAIN,15));
     errorEnviar.setVisible(false);
     enviar.add(errorEnviar);
+
 
     botonEnviar=new JButton("ENVIAR");
     botonEnviar.setBounds(200,370,90,20);
@@ -311,44 +340,13 @@ public class Ventana extends JFrame{
         }else{
           errorEnviar.setVisible(true);
         }
+
       }
     });
     enviar.add(botonEnviar);
 
-    instruccionDestinatario= new JLabel("Ingresar destinatario(s) usuario@servidor");
-    instruccionDestinatario.setLayout(null);
-    instruccionDestinatario.setBounds(20,35,250,13);
-    instruccionDestinatario.setFont(new Font("arial",Font.PLAIN,10));
-    enviar.add(instruccionDestinatario);
 
-    instruccionAsunto= new JLabel("Ingresar Asunto");
-    instruccionAsunto.setLayout(null);
-    instruccionAsunto.setBounds(20,75,200,13);
-    instruccionAsunto.setFont(new Font("arial",Font.PLAIN,10));
-    enviar.add(instruccionAsunto);
 
-    instruccionCuerpo= new JLabel("Ingresar mensaje");
-    instruccionCuerpo.setLayout(null);
-    instruccionCuerpo.setBounds(20,115,200,15);
-    instruccionCuerpo.setFont(new Font("arial",Font.PLAIN,10));
-    enviar.add(instruccionCuerpo);
-
-    destino=new JTextField("");
-    destino.setFont(new Font("arial",Font.PLAIN,10));
-    destino.setBounds(20,50,300,20);
-    enviar.add(destino);
-
-    asunto=new JTextField("");
-    asunto.setFont(new Font("arial",Font.PLAIN,10));
-    asunto.setBounds(20,90,300,20);
-    enviar.add(asunto);
-
-    cuerpo= new JTextArea("");
-    cuerpo.setLineWrap(true);
-    cuerpo.setWrapStyleWord(true);
-    cuerpo.setFont(new Font("arial",Font.PLAIN,10));
-    cuerpo.setBounds(20,130,300,220);
-    enviar.add(cuerpo);
   }
   public void cargarContacts(){
     contactos=new JPanel();
@@ -391,7 +389,7 @@ public class Ventana extends JFrame{
     nuevoContact=new JPanel();
     nuevoContact.setLayout(null);
     nuevoContact.setBackground(new Color(175,178,192));
-    nuevoContact.setSize(this.getWidth()-menu.getWidth(),this.getHeight()-encabezado.getHeight());
+    nuevoContact.setSize(this.getWidth()-(menu.getWidth()),this.getHeight()-(encabezado.getHeight()+30));
     nuevoContact.setLocation(menu.getWidth(),encabezado.getHeight());
     nuevoContact.setVisible(false);
     this.getContentPane().add(nuevoContact);
@@ -403,13 +401,34 @@ public class Ventana extends JFrame{
 
     nombreNuevo=new JTextField("");
     nombreNuevo.setFont(new Font("arial",Font.PLAIN,10));
-    nombreNuevo.setBounds(20,50,200,20);
+    nombreNuevo.setSize(250,20);
+    nombreNuevo.setLocation(nuevoContact.getWidth()/2-nombreNuevo.getWidth()/2,75);
     nuevoContact.add(nombreNuevo);
 
     servidorNuevo=new JTextField("");
-    servidorNuevo.setBounds(20,80,200,20);
+    servidorNuevo.setSize(250,20);
+    servidorNuevo.setLocation(nuevoContact.getWidth()/2-servidorNuevo.getWidth()/2,125);
     servidorNuevo.setFont(new Font("arial",Font.PLAIN,10));
     nuevoContact.add(servidorNuevo);
+
+    instruccionNuevoNombre= new JLabel("Nombre del nuevo contacto");
+    instruccionNuevoNombre.setBounds(nombreNuevo.getX(),nombreNuevo.getY()-20,300,20);
+    instruccionNuevoNombre.setFont(new Font("arial",Font.PLAIN,15));
+    nuevoContact.add(instruccionNuevoNombre);
+
+    instruccionNuevoServidor=new JLabel("Servidor del contacto");
+    instruccionNuevoServidor.setBounds(servidorNuevo.getX(),servidorNuevo.getY()-20, 200,20);
+    instruccionNuevoServidor.setFont(new Font("arial",Font.PLAIN,15));
+    nuevoContact.add(instruccionNuevoServidor);
+
+    errorGuardar=new JLabel("ERROR AL ENVIAR");
+    errorGuardar.setLayout(null);
+    errorGuardar.setSize(200,20);
+    errorGuardar.setLocation(servidorNuevo.getX(),servidorNuevo.getY()+30);
+    errorGuardar.setForeground(Color.RED);
+    errorGuardar.setFont(new Font("arial",Font.PLAIN,15));
+    errorGuardar.setVisible(false);
+    nuevoContact.add(errorGuardar);
 
     botonCancelar=new JButton("CANCELAR");
     botonCancelar.setBounds(20,360,100,30);
@@ -420,16 +439,27 @@ public class Ventana extends JFrame{
         enviar.setVisible(false);
         contactos.setVisible(true);
         nuevoContact.setVisible(false);
-
+        errorGuardar.setVisible(false);
       }
     });
     nuevoContact.add(botonCancelar);
 
     botonGuardar=new JButton("GUARDAR");
-    botonGuardar.setBounds(200,360,100,30);
+    botonGuardar.setSize(100,30);
+    botonGuardar.setLocation(nuevoContact.getWidth()-(botonGuardar.getWidth()+20),nuevoContact.getHeight()-(botonGuardar.getHeight()+20));
     botonGuardar.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        cliente.guardarContacto(nombreNuevo.getText(),servidorNuevo.getText());
+        if(!nombreNuevo.getText().equals(" ") && !servidorNuevo.getText().equals("")){
+          if(cliente.guardarContacto(nombreNuevo.getText(),servidorNuevo.getText())){
+            nombreNuevo.setText("");
+            servidorNuevo.setText("");
+            errorGuardar.setText("Contacto guardado");
+            errorGuardar.setForeground(new Color(83, 122, 0));
+            errorGuardar.setVisible(true);
+          }else{
+            errorGuardar.setVisible(true);
+          }
+        }
       }
     });
     nuevoContact.add(botonGuardar);

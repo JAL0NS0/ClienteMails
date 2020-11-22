@@ -200,6 +200,7 @@ public class Cliente{
       String aux=respuesta.substring(0,11);
       if(aux.equals(Comandos.OK_NEWCONT)){
         System.out.println("Contacto "+contacto + " Guardado exitosamente");
+        miBaseDatos.agregarContacto(usuario,nuevo);
         return true;
       }else{
         System.out.println("Error al guardar contacto");
@@ -211,7 +212,7 @@ public class Cliente{
       return false;
     }
   }
-  public ArrayList<String[]> cargarListaNuevos(){
+  public String[] cargarListaNuevos(){
     return miBaseDatos.cargarListaNuevos(usuario);
   }
   public void marcarLeido(String id){

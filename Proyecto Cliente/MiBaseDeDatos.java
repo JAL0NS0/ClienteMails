@@ -1,6 +1,7 @@
 import db.*;
 import java.util.*;
 public class MiBaseDeDatos{
+  int contador;
   DB miBaseDatos;
   String query;
   public MiBaseDeDatos(String direccion){
@@ -154,22 +155,28 @@ public class MiBaseDeDatos{
       e.printStackTrace();
     }
   }
-  public ArrayList<String[]> cargarListaNuevos(String usuario){
-    ArrayList<String[]> nMails= new ArrayList<String[]>();
+  public String[] cargarListaNuevos(String usuario){
+    Integer numero=contarMensajes(usuario,0);
+    String[] nMails= new String[numero];
     query="select id,remitente,asunto,cuerpo from mensajes where leido=0 and destinatario='%s';";
     query= String.format(query,usuario);
     try{
-      if(miBaseDatos.executeQuery(query,"respuesta")){
-        while(miBaseDatos.next("respuesta")){
-          String[] aux= new String[4];
-          aux[0]=miBaseDatos.getString("id","respuesta");
-          aux[1]=miBaseDatos.getString("remitente","respuesta");
-          aux[2]=miBaseDatos.getString("asunto","respuesta");
-          aux[3]=miBaseDatos.getString("cuerpo","respuesta");
-          nMails.add(aux);
-        }
+      if(numero==0){
+        return nMails;
       }else{
-        System.out.println("No se pudo hacer la consulta");
+        if(miBaseDatos.executeQuery(query,"respuesta")){
+          contador=0;
+          while(miBaseDatos.next("respuesta")){
+            String aux="";
+            aux= aux + miBaseDatos.getString("id","respuesta")+". ";
+            aux= aux + miBaseDatos.getString("remitente","respuesta")+"   ";
+            aux= aux + miBaseDatos.getString("asunto","respuesta");
+            nMails[contador]=aux;
+            contador+=1;
+          }
+        }else{
+          System.out.println("No se pudo hacer la consulta");
+        }
       }
     }catch(Exception e){
       System.out.println(e.getClass());
@@ -193,4 +200,24 @@ public class MiBaseDeDatos{
       e.printStackTrace();
     }
   }
+  public Integer contarMensajes(String usuario,int leido){
+    query="SELECT COUNT(*) as contador FROM mensajes WHERE leido=%d and destinatario='%s';";
+    query=String.format(query,leido,usuario);
+    try{
+      if(miBaseDatos.executeQuery(query,"respuesta")){
+        miBaseDatos.next("respuesta");
+        String aparece = miBaseDatos.getString("contador","respuesta");
+        return Integer.parseInt(aparece);
+      }else{
+        System.out.println("No se pudo hacer la consulta");
+        return 0;
+      }
+    }catch(Exception e){
+      System.out.println(e.getClass());
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+      return 0;
+    }
+  }
+
 }
