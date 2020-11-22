@@ -46,7 +46,6 @@ public class MiBaseDeDatos{
     query="SELECT COUNT(*) as contador FROM ipServidor WHERE servidor='%s';";
     query= String.format(query,nomServidor);
     try{
-      System.out.println(query);
       if(miBaseDatos.executeQuery(query,"respuesta")){
         miBaseDatos.next("respuesta");
         String aparece = miBaseDatos.getString("contador","respuesta");
@@ -119,7 +118,6 @@ public class MiBaseDeDatos{
   public void agregarContacto(String usuario,String contactoN){
     query="INSERT INTO contactos (nombre,contacto) VALUES ('%s','%s');";
     query= String.format(query,usuario,contactoN);
-    System.out.println(query);
     try{
       if(miBaseDatos.executeNonQuery(query)){
       System.out.println("Contacto agregado exitosamente");
@@ -144,7 +142,6 @@ public class MiBaseDeDatos{
   public void guardarNuevoMensaje(String receptor,String emisor,String asunto,String mensaje){
     query="INSERT INTO mensajes (destinatario,remitente,asunto,cuerpo,leido) VALUES ('%s','%s','%s','%s',0);";
     query= String.format(query,receptor,emisor,asunto,mensaje);
-    System.out.println(query);
     try{
       if(miBaseDatos.executeNonQuery(query)){
       System.out.println("Mensaje guardado exitosamente");
@@ -161,7 +158,6 @@ public class MiBaseDeDatos{
     ArrayList<String[]> nMails= new ArrayList<String[]>();
     query="select id,remitente,asunto,cuerpo from mensajes where leido=0 and destinatario='%s';";
     query= String.format(query,usuario);
-    System.out.println(query);
     try{
       if(miBaseDatos.executeQuery(query,"respuesta")){
         while(miBaseDatos.next("respuesta")){
@@ -181,5 +177,20 @@ public class MiBaseDeDatos{
       e.printStackTrace();
     }
     return nMails;
+  }
+  public void marcarLeido(String usuario,String id){
+    query="UPDATE mensajes SET leido=1 WHERE destinatario='%s' and id=%s;";
+    query=String.format(query,usuario,id);
+    try{
+      if(miBaseDatos.executeNonQuery(query)){
+        System.out.println("Mensaje leido");
+      }else{
+        System.out.println("Error al marcar el mensaje");
+      }
+    }catch(Exception e){
+      System.out.println(e.getClass());
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+    }
   }
 }

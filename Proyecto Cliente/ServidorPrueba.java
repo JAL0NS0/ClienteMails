@@ -29,14 +29,9 @@ public class ServidorPrueba {
           while(true){
             Socket socketClient = server.accept();
             System.out.println("Conexion aceptada!");
-
             InputStreamReader isr = new InputStreamReader(socketClient.getInputStream());
             BufferedReader in = new BufferedReader(isr);
-
-            // es importante el segundo argumento (true) para que tenga autoflush al hacer print
             PrintWriter out = new PrintWriter(socketClient.getOutputStream(), true);
-
-            //out.println("Bienvenido al servidor de cc2 :)");
             String usa;
             while(true){
               usa = in.readLine();
@@ -135,22 +130,6 @@ public class ServidorPrueba {
                         break;
                       }
                     }
-
-                    // if(Pattern.matches(formato,contacto)){
-                    //   contactos.add(contacto);
-                    //   System.out.println(contacto);
-                    //   if( ultimo == '*'){
-                    //     System.out.println("Recibido ultimo contacto");
-                    //     break;
-                    //   }
-                    // }else{
-                    //   contador+=1;
-                    //   System.out.println(contacto+" formato invalido");
-                    //   if(contacto.charAt(contacto.length()-1) == '*'){
-                    //     System.out.println("Recibido ultimo contacto");
-                    //     break;
-                    //   }
-                    // }
                   }
                   String asunto= in.readLine();
                   String cuerpo= in.readLine();

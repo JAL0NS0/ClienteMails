@@ -4,6 +4,7 @@ import java.awt.event.*;
 import java.util.regex.*;
 import java.util.*;
 public class Ventana extends JFrame{
+  JScrollPane scrollMail;
   Cliente cliente;
   ArrayList<String[]> nMails;
   ArrayList<JButton> listaBotones;
@@ -69,8 +70,8 @@ public class Ventana extends JFrame{
     this.getContentPane().add(encabezado);
 
     titulo=new JLabel("MAIL CLIENT");
-    titulo.setBounds(encabezado.getWidth()/2-60, encabezado.getHeight()/2-20, 120,40);
-    titulo.setFont(new Font("arial",Font.PLAIN,15));
+    titulo.setBounds(encabezado.getWidth()/2-150, encabezado.getHeight()/2-20, 300,40);
+    titulo.setFont(new Font("purisa",Font.PLAIN,30));
     encabezado.add(titulo);
 
     menu=new JPanel();
@@ -89,6 +90,7 @@ public class Ventana extends JFrame{
         enviar.setVisible(false);
         contactos.setVisible(false);
         nuevoContact.setVisible(false);
+
       }
     });
     menu.add(botonMenuMails);
@@ -231,7 +233,7 @@ public class Ventana extends JFrame{
     mails=new JPanel();
     mails.setLayout(null);
     mails.setBackground(new Color(175,178,192));
-    mails.setSize(this.getWidth()-menu.getWidth(),this.getHeight()-encabezado.getHeight());
+    mails.setSize(this.getWidth()-menu.getWidth(),this.getHeight()-(encabezado.getHeight()+30));
     mails.setLocation(menu.getWidth(),encabezado.getHeight());
     mails.setVisible(true);
     this.getContentPane().add(mails);
@@ -244,7 +246,6 @@ public class Ventana extends JFrame{
     panelInteriorMail=new JPanel();
     panelInteriorMail.setLayout(new GridLayout(21,1));
     panelInteriorMail.setBackground(new Color(175,178,192));
-    // new Color(175,178,192)
     panelInteriorMail.setBounds(10,30,mails.getWidth()-20,mails.getHeight()-50);
     for(String[] x:nMails){
       JButton boton = new JButton(x[1]+" "+x[2]);
@@ -254,10 +255,18 @@ public class Ventana extends JFrame{
         public void actionPerformed(ActionEvent e) {
           JOptionPane.showMessageDialog(null,x[1]+"\n"+x[2]+"\n"+x[3]+"\n");
           boton.setForeground(Color.BLACK);
+          cliente.marcarLeido(x[0]);
+          panelInteriorMail.setSize(mails.getWidth()-20,panelInteriorMail.getHeight()+10);
+          panelInteriorMail.updateUI();
         }
       });
       panelInteriorMail.add(boton);
     }
+
+    // scrollMail=new JScrollPane();
+    // scrollMail.setLocation(10,30);
+    // scrollMail.setSize(mails.getWidth()-20,mails.getHeight()-40);
+    // mails.add(scrollMail);
 
     mails.add(panelInteriorMail);
   }
@@ -335,6 +344,8 @@ public class Ventana extends JFrame{
     enviar.add(asunto);
 
     cuerpo= new JTextArea("");
+    cuerpo.setLineWrap(true);
+    cuerpo.setWrapStyleWord(true);
     cuerpo.setFont(new Font("arial",Font.PLAIN,10));
     cuerpo.setBounds(20,130,300,220);
     enviar.add(cuerpo);

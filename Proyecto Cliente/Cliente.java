@@ -21,16 +21,12 @@ public class Cliente{
   }
   //Verifica el nombre del servidor e inicia la conexion con el socket
   public byte Verificar(String nom, String contra){
-    System.out.println("Este es el usuario@server: "+nom);
-    System.out.println("Este es la contrasena: "+contra);
     contrasena= contra;
     dividido=nom.split("@");
-    System.out.println("Este es el usuario: "+dividido[0]);
     usuario=dividido[0];
     nombreServidor=dividido[1];
     if(miBaseDatos.buscarServidor(nombreServidor)){
       this.ipservidor= miBaseDatos.obtenerIpServidor(nombreServidor);
-      System.out.println("servidor: "+ipservidor);
         try{
           socket= new MiSocket(ipservidor,PUERTO);
         }catch(Exception e){
@@ -43,7 +39,7 @@ public class Cliente{
         }
         try{
           respuesta= socket.getIn().readLine();
-          System.out.println(respuesta);
+          System.out.println("Servidor: "+respuesta);
         }catch(Exception e){
           System.out.println("Error al oir");
         }
@@ -51,12 +47,15 @@ public class Cliente{
           return 0;
         }else if(respuesta.substring(0,Comandos.LOGIN_ERROR.length()).equals(Comandos.LOGIN_ERROR)){
           if(respuesta.substring(Comandos.LOGIN_ERROR.length(),respuesta.length()).equals("101")) {
+            miBaseDatos.cerrarConexion();
             return 2;
           }else if(respuesta.substring(Comandos.LOGIN_ERROR.length(),respuesta.length()).equals("102")) {
+            miBaseDatos.cerrarConexion();
             return 3;
           }
         }
     }
+      miBaseDatos.cerrarConexion();
       return 1;
   }
   //Hace un log out con el servidor
@@ -197,9 +196,8 @@ public class Cliente{
       socket.getOut().println("NEWCONT "+nuevo);
       String respuesta=socket.getIn().readLine();
       System.out.println("Cliente: "+respuesta);
-      String contacto= respuesta.substring(12,respuesta.length());
+      String contacto= respuesta.substring(11,respuesta.length());
       String aux=respuesta.substring(0,11);
-      System.out.println(aux+"+");
       if(aux.equals(Comandos.OK_NEWCONT)){
         System.out.println("Contacto "+contacto + " Guardado exitosamente");
         return true;
@@ -215,5 +213,8 @@ public class Cliente{
   }
   public ArrayList<String[]> cargarListaNuevos(){
     return miBaseDatos.cargarListaNuevos(usuario);
+  }
+  public void marcarLeido(String id){
+    miBaseDatos.marcarLeido(usuario,id);
   }
 }
