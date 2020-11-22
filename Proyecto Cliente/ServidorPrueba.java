@@ -86,7 +86,7 @@ public class ServidorPrueba {
                       contador++;
                       if(contador != servidores.size()){
                         System.out.println("Servidor: OK GETNEWMAILS " + i + servidores.get(i) + " \"Hola\" \"Como estas,como vendras\" ") ;
-                        out.println("OK GETNEWMAILS " + i + servidores.get(i) + " \"Hola\" \"Como estas,como vendras\" ");
+                        out.println("OK GETNEWMAILS " + i + servidores.get(i) + " \"Hola Esta es un aprueba\" \"Como estas,como vendras\" ");
                       } else {
                         System.out.println("Servidor: OK GETNEWMAILS " + i + servidores.get(i) + " \"Buenas\" \"Mi nombre es Pepe\" " +  " *");
                         out.println("OK GETNEWMAILS " + i + servidores.get(i) + " \"Buenas\" \"Mi nombre es Pepe\" " + " *");

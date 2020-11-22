@@ -91,6 +91,7 @@ public class Cliente{
     String remitente;
     String asunto;
     String body;
+    String submensaje;
     while(true){
         String[] aux= new String[3];
         todo=socket.getIn().readLine();
@@ -104,10 +105,13 @@ public class Cliente{
         if(comando.equals(Comandos.OK_GETNEWMAILS)){
           mensaje= todo.substring(Comandos.OK_GETNEWMAILS.length(),todo.length());
           int finalRemitente = mensaje.indexOf(" ");
-          int finalAsunto = mensaje.indexOf(" ",finalRemitente+1);
+          System.out.println("Final remitente: "+finalRemitente);
           aux[0]=mensaje.substring(0,finalRemitente);
-          aux[1]=mensaje.substring(finalRemitente+1,finalAsunto);
-          aux[2]=mensaje.substring(finalAsunto+1,mensaje.length());
+          submensaje=mensaje.substring(finalRemitente+2,mensaje.length());
+          int finalAsunto = submensaje.indexOf("\"");
+          System.out.println("Final asunto: "+finalAsunto);
+          aux[1]=submensaje.substring(0,finalAsunto);
+          aux[2]=submensaje.substring(finalAsunto+2,submensaje.length());
           if(mensaje.charAt(mensaje.length()-1)==('*')){
             miBaseDatos.guardarNuevoMensaje(usuario,aux[0],aux[1],aux[2]);
             break;

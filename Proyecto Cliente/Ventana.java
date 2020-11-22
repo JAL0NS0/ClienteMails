@@ -46,6 +46,7 @@ public class Ventana extends JFrame{
   JButton botonCancelar;
   JButton botonGuardar;
   JTextArea cuerpo;
+  JTextArea mensajeCompleto;
   JTextField usuario_server;
   JPasswordField contrasena;
   JTextField destino;
@@ -248,13 +249,27 @@ public class Ventana extends JFrame{
     titulo_mail.setFont(new Font("arial",Font.PLAIN,15));
     mails.add(titulo_mail);
 
-
     listaMensajes= new JList<String>(nMails);
     listaMensajes.setVisibleRowCount​(5);
+    listaMensajes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    // listaMensajes.addListSelectionListener(new ListSelectionEvent(){
+    //   public void valueChanged(ListSElectionEvent arg0){
+    //     List<String> texto= listaMensajes.getSelectedValuesList();
+    //     for(String x:text){
+    //       String id=x.split(".");
+    //       System.out.println();
+    //     }
+    //   }
+    // });
     scrollMail= new JScrollPane(listaMensajes);
     scrollMail.setLocation(10,30);
     scrollMail.setSize(mails.getWidth()/2+50,mails.getHeight()-50);
     mails.add(scrollMail);
+
+    mensajeCompleto= new JTextArea();
+    mensajeCompleto.setSize(mails.getWidth()-(scrollMail.getWidth()+scrollMail.getX()+20),scrollMail.getHeight());
+    mensajeCompleto.setLocation(scrollMail.getWidth()+scrollMail.getX()+10,scrollMail.getY());
+    mails.add(mensajeCompleto);
   }
   public void cargarEnviar(){
     enviar=new JPanel();
