@@ -35,7 +35,7 @@ public class Cliente{
           System.out.println("Error al crear el socket1");
         }
         try{
-          System.out.println("Cliente: "+Comandos.LOGIN + usuario+" "+contrasena);
+          System.out.println("Cliente: "+"LOGIN "+ usuario+" "+contrasena);
           socket.getOut().writeUTF(Comandos.LOGIN + usuario+" "+contrasena);
         }catch(Exception e){
           System.out.println("Error al hablar");
@@ -46,7 +46,7 @@ public class Cliente{
         }catch(Exception e){
           System.out.println("Error al oir");
         }
-        if(respuesta.equals(Comandos.OK_LOGIN)){
+        if(respuesta.equals("OK LOGIN")){
           return 0;
         }else if(respuesta.substring(0,12).equals(Comandos.LOGIN_ERROR)){
           if(respuesta.substring(12,respuesta.length()).equals("101")) {
@@ -129,39 +129,9 @@ public class Cliente{
     }
   }
 
-  public ArrayList<String> getContactos(){
-    ArrayList<String> listaContactos=new ArrayList<String>();
-    try{
-    socket.getOut().writeUTF(Comandos.CLIST + usuario);
-    System.out.println("Cliente: CLIST "+usuario);
-    String aux;
-    String comando;
-    while(true){
-        aux=socket.getIn().readUTF();
-        comando=aux.substring(0,Comandos.OK_CLIST.length());
-        System.out.println("Servidor: "+aux);
-        if(comando.equals(Comandos.OK_CLIST)){
-          aux= aux.substring(Comandos.OK_CLIST.length(),aux.length());
-          if(aux.charAt(aux.length()-1)==('*')){
-            aux=aux.substring(0,aux.length()-1);
-            if(!miBaseDatos.existeContacto(usuario,aux)){
-              miBaseDatos.agregarContacto(usuario,aux);
-            }
-            listaContactos.add(aux);
-            break;
-          }else{
-            if(!miBaseDatos.existeContacto(usuario,aux)){
-              miBaseDatos.agregarContacto(usuario,aux);
-            }
-            listaContactos.add(aux);
-          }
-        }
-      }
-    }catch(Exception e){
-      System.out.println("Error al leer el comando");
+  public String[] getContactos(){
+    return miBaseDatos.getContactos(usuario);
     }
-    return listaContactos;
-  }
   public boolean enviarMensaje(String destinatarios,String asunto,String cuerpo){
     try{
         System.out.println("CLIENTE: SEND MAIL");

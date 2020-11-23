@@ -243,4 +243,53 @@ public class MiBaseDeDatos{
       return mensajeAImprimir;
     }
   }
+  public int contarContactos(String usuario){
+    query="select count (*) as contado from contactos where nombre='%s';";
+    query=String.format(query,usuario);
+    try{
+      if(miBaseDatos.executeQuery(query,"respuesta")){
+        miBaseDatos.next("respuesta");
+        String aparece = miBaseDatos.getString("contado","respuesta");
+        return Integer.parseInt(aparece);
+      }else{
+        System.out.println("No se pudo hacer la consulta");
+        return 0;
+      }
+    }catch(Exception e){
+      System.out.println(e.getClass());
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+      return 0;
+    }
+  }
+  public String[] getContactos(String usuario){
+    int n= contarContactos(usuario);
+    String[] Lcontactos=new String[n];
+    query="select contacto from contactos where nombre='%s';";
+    query=String.format(query,usuario);
+    try{
+      if(n==0){
+        return Lcontactos;
+      }else{
+        if(miBaseDatos.executeQuery(query,"respuesta")){
+          contador=0;
+          while(miBaseDatos.next("respuesta")){
+            String aux="";
+            aux= miBaseDatos.getString("contacto","respuesta")+". ";
+            Lcontactos[contador]=aux;
+            contador+=1;
+          }
+          return Lcontactos;
+        }else{
+          System.out.println("No se pudo hacer la consulta");
+        }
+      }
+      return Lcontactos;
+    }catch(Exception e){
+      System.out.println(e.getClass());
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+      return Lcontactos;
+    }
+  }
 }

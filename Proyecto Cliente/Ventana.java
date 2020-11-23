@@ -7,9 +7,11 @@ import javax.swing.event.ListSelectionEvent;
 public class Ventana extends JFrame{
   JList<String> listaMensajes;
   JList<String> listaMensajesLeidos;
+  JList<String> jlistaContactos;
   Cliente cliente;
   ArrayList<String> listaContactos;
   String[] listaContactos1;
+  JScrollPane scrollContactos;
   JScrollPane scrollMail;
   String[] nMails;
   String[] nMailsLeidos;
@@ -217,7 +219,7 @@ public class Ventana extends JFrame{
         String contra= new String(contrasena.getPassword());
         if(Pattern.matches(formato,nombre)){
           if(cliente.Verificar(nombre,contra)==0){
-            listaContactos=cliente.getContactos();
+            listaContactos1=cliente.getContactos();
             cliente.getNuevosMails();
             nMails=cliente.cargarListaNuevos();
             nMailsLeidos=cliente.cargarListaLeidos();
@@ -478,15 +480,20 @@ public class Ventana extends JFrame{
     titulo_contactos.setFont(new Font("arial",Font.PLAIN,15));
     contactos.add(titulo_contactos);
 
-    panelInteriorContactos=new JPanel();
-    panelInteriorContactos.setLayout(new GridLayout(22,1));
-    panelInteriorContactos.setBackground(new Color(175,178,192));
-    panelInteriorContactos.setBounds(20,35,mails.getWidth()-40,330);
-    for(String x:listaContactos){
-      panelInteriorContactos.add(new JButton(x));
-    }
-
-    contactos.add(panelInteriorContactos);
+    jlistaContactos= new JList<String>(listaContactos1);
+    jlistaContactos.setVisibleRowCount​(5);
+    jlistaContactos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    jlistaContactos.addMouseListener(new MouseAdapter(){
+          @Override
+          public void mouseClicked(MouseEvent e) {
+              String s = (String) jlistaContactos.getSelectedValue();
+              System.out.println("Value Selected: " + s.toString());
+          }
+    });
+    scrollContactos= new JScrollPane(jlistaContactos);
+    scrollContactos.setSize(mails.getWidth()/2+50,mails.getHeight()-50);
+    scrollContactos.setLocation(contactos.getWidth()/2-scrollContactos.getWidth()/2,30);
+    contactos.add(scrollContactos);
 
     botonNuevo=new JButton("NUEVO CONTACTO");
     botonNuevo.setBounds(165,370,150,25);
