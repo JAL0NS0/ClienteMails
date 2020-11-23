@@ -50,9 +50,7 @@ public class MiBaseDeDatos{
       if(miBaseDatos.executeQuery(query,"respuesta")){
         miBaseDatos.next("respuesta");
         String aparece = miBaseDatos.getString("contador","respuesta");
-        System.out.println(aparece);
         if(aparece.equals("1")){
-          System.out.println("funciona");
           return true;
         }else{
           return false;
@@ -76,7 +74,6 @@ public class MiBaseDeDatos{
       if(miBaseDatos.executeQuery(query,"respuesta")){
         miBaseDatos.next("respuesta");
         String ip = miBaseDatos.getString("ips","respuesta");
-        System.out.println(ip);
         return ip;
       }else{
         System.out.println("No se pudo hacer la consulta");
@@ -97,12 +94,9 @@ public class MiBaseDeDatos{
       if(miBaseDatos.executeQuery(query,"respuesta")){
         miBaseDatos.next("respuesta");
         String aparece = miBaseDatos.getString("cantidad","respuesta");
-        System.out.println(aparece);
         if(aparece.equals("1")){
-          System.out.println("existe");
           return true;
         }else{
-          System.out.println("no existe");
           return false;
         }
       }else{
@@ -223,7 +217,6 @@ public class MiBaseDeDatos{
     String[] mensajeAImprimir= new String[4];
     query="select * from mensajes where id='%s';";
     query=String.format(query,id);
-    System.out.println(query);
     try{
       if(miBaseDatos.executeQuery(query,"respuesta")){
         miBaseDatos.next("respuesta");

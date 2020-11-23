@@ -219,6 +219,7 @@ public class Ventana extends JFrame{
         String contra= new String(contrasena.getPassword());
         if(Pattern.matches(formato,nombre)){
           if(cliente.Verificar(nombre,contra)==0){
+            cliente.pedirContactos();
             listaContactos1=cliente.getContactos();
             cliente.getNuevosMails();
             nMails=cliente.cargarListaNuevos();
@@ -272,7 +273,6 @@ public class Ventana extends JFrame{
               String[] completo=s.split(" ");
               String q = completo[0];
               q= q.substring(0,q.length()-1);
-              System.out.println(q);
               String[] mensaje=cliente.getMensajeCompleto(q);
               mensajeCompleto.setText(mensaje[0]+". "+mensaje[1]+"\n\n"+mensaje[2]+"\n\n"+mensaje[3]);
               cliente.marcarLeido(mensaje[0]);
@@ -307,7 +307,6 @@ public class Ventana extends JFrame{
               String[] completo=s.split(" ");
               String q = completo[0];
               q= q.substring(0,q.length()-1);
-              System.out.println(q);
               String[] mensaje=cliente.getMensajeCompleto(q);
               mensajeCompletoLeido.setText(mensaje[0]+". "+mensaje[1]+"\n\n"+mensaje[2]+"\n\n"+mensaje[3]);
               cliente.marcarLeido(mensaje[0]);
@@ -347,6 +346,7 @@ public class Ventana extends JFrame{
     botonRecargarMailsLeidos.setFont(new Font("arial",Font.PLAIN,10));
     botonRecargarMailsLeidos.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
+        cliente.getNuevosMails();
         cargarMailsLeidos();
   } } ) ;
     mails.add(botonRecargarMailsLeidos);
@@ -374,6 +374,11 @@ public class Ventana extends JFrame{
     mensajeCompletoLeido.setVisible(false);
 
   }
+  public void cargarContactosDeNuevo(){
+    listaContactos1=cliente.getContactos();
+    jlistaContactos.setListData​(listaContactos1);
+    listaMensajes.updateUI();
+  }
   public void cargarEnviar(){
     enviar=new JPanel();
     enviar.setLayout(null);
@@ -384,7 +389,7 @@ public class Ventana extends JFrame{
     this.getContentPane().add(enviar);
 
     titulo_enviar=new JLabel("ENVIAR CORREO");
-    titulo_enviar.setSize(150,30);
+    titulo_enviar.setSize(250,30);
     titulo_enviar.setLocation(enviar.getWidth()/2-titulo_enviar.getWidth()/2,10);
     titulo_enviar.setFont(new Font("arial",Font.PLAIN,20));
     enviar.add(titulo_enviar);
@@ -418,6 +423,7 @@ public class Ventana extends JFrame{
     cuerpo= new JTextArea("");
     cuerpo.setLineWrap(true);
     cuerpo.setWrapStyleWord(true);
+    cuerpo.setMargin( new Insets(10,10,10,10) );
     cuerpo.setFont(new Font("arial",Font.PLAIN,12));
     cuerpo.setSize(destino.getWidth(),200);
     cuerpo.setLocation(asunto.getX(),asunto.getY()+40);
@@ -441,21 +447,29 @@ public class Ventana extends JFrame{
 
 
     botonEnviar=new JButton("ENVIAR");
-    botonEnviar.setBounds(200,370,90,20);
+    botonEnviar.setSize(90,20);
+    botonEnviar.setLocation(cuerpo.getX()+cuerpo.getWidth()-botonEnviar.getWidth(),cuerpo.getY()+cuerpo.getHeight()+10);
     botonEnviar.setFont(new Font("arial",Font.PLAIN,10));
     botonEnviar.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         String destinatario= destino.getText();
         String asuntoParaEnviar=asunto.getText();
         String mensajeAEnviar=cuerpo.getText();
-        if(cliente.enviarMensaje(destinatario,asuntoParaEnviar,mensajeAEnviar)){
-          destino.setText("");
-          asunto.setText("");
-          cuerpo.setText("");
-          errorEnviar.setText("ENVIO EXITOSO");
-          errorEnviar.setForeground(new Color(83, 122, 0));
-          errorEnviar.setVisible(true);
+        if(!destinatario.equals("")&&!asuntoParaEnviar.equals("")&&!mensajeAEnviar.equals("")){
+          if(cliente.enviarMensaje(destinatario,asuntoParaEnviar,mensajeAEnviar)){
+            destino.setText("");
+            asunto.setText("");
+            cuerpo.setText("");
+            errorEnviar.setText("ENVIO EXITOSO");
+            errorEnviar.setForeground(new Color(83, 122, 0));
+            errorEnviar.setVisible(true);
+          }else{
+            errorEnviar.setText("ERROR AL ENVIAR");
+            errorEnviar.setVisible(true);
+          }
         }else{
+          errorEnviar.setText("INGRESE TODOS LOS DATOS");
+          errorEnviar.setSize(300,20);
           errorEnviar.setVisible(true);
         }
 
@@ -491,12 +505,13 @@ public class Ventana extends JFrame{
           }
     });
     scrollContactos= new JScrollPane(jlistaContactos);
-    scrollContactos.setSize(mails.getWidth()/2+50,mails.getHeight()-50);
+    scrollContactos.setSize(contactos.getWidth()/2+50,contactos.getHeight()-150);
     scrollContactos.setLocation(contactos.getWidth()/2-scrollContactos.getWidth()/2,30);
     contactos.add(scrollContactos);
 
     botonNuevo=new JButton("NUEVO CONTACTO");
-    botonNuevo.setBounds(165,370,150,25);
+    botonNuevo.setSize(150,25);
+    botonNuevo.setLocation(scrollContactos.getX()+scrollContactos.getWidth()/2-botonNuevo.getWidth()/2,scrollContactos.getY()+scrollContactos.getHeight()+botonNuevo.getHeight());
     botonNuevo.setFont(new Font("arial",Font.PLAIN,10));
     botonNuevo.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -574,6 +589,8 @@ public class Ventana extends JFrame{
       public void actionPerformed(ActionEvent e) {
         if(!nombreNuevo.getText().equals(" ") && !servidorNuevo.getText().equals("")){
           if(cliente.guardarContacto(nombreNuevo.getText(),servidorNuevo.getText())){
+            cliente.pedirContactos();
+            cargarContactosDeNuevo();
             nombreNuevo.setText("");
             servidorNuevo.setText("");
             errorGuardar.setText("Contacto guardado");

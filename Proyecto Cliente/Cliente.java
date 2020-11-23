@@ -108,11 +108,9 @@ public class Cliente{
         if(comando.equals(Comandos.OK_GETNEWMAILS)){
           mensaje= todo.substring(Comandos.OK_GETNEWMAILS.length(),todo.length());
           int finalRemitente = mensaje.indexOf(" ");
-          System.out.println("Final remitente: "+finalRemitente);
           aux[0]=mensaje.substring(0,finalRemitente);
           submensaje=mensaje.substring(finalRemitente+2,mensaje.length());
           int finalAsunto = submensaje.indexOf("\"");
-          System.out.println("Final asunto: "+finalAsunto);
           aux[1]=submensaje.substring(0,finalAsunto);
           aux[2]=submensaje.substring(finalAsunto+2,submensaje.length());
           if(mensaje.charAt(mensaje.length()-1)==('*')){
@@ -132,6 +130,37 @@ public class Cliente{
   public String[] getContactos(){
     return miBaseDatos.getContactos(usuario);
     }
+
+    public void pedirContactos(){
+    try{
+    socket.getOut().writeUTF(Comandos.CLIST + usuario);
+    System.out.println("Cliente: CLIST "+usuario);
+    String aux;
+    String comando;
+    while(true){
+        aux=socket.getIn().readUTF();
+        comando=aux.substring(0,Comandos.OK_CLIST.length());
+        System.out.println("Servidor: "+aux);
+        if(comando.equals(Comandos.OK_CLIST)){
+          aux= aux.substring(Comandos.OK_CLIST.length(),aux.length());
+          if(aux.charAt(aux.length()-1)==('*')){
+            aux=aux.substring(0,aux.length()-1);
+            if(!miBaseDatos.existeContacto(usuario,aux)){
+              miBaseDatos.agregarContacto(usuario,aux);
+            }
+            break;
+          }else{
+            if(!miBaseDatos.existeContacto(usuario,aux)){
+              miBaseDatos.agregarContacto(usuario,aux);
+            }
+          }
+        }
+      }
+    }catch(Exception e){
+      System.out.println("Error al leer el comando");
+    }
+  }
+
   public boolean enviarMensaje(String destinatarios,String asunto,String cuerpo){
     try{
         System.out.println("CLIENTE: SEND MAIL");
@@ -164,7 +193,6 @@ public class Cliente{
           return false;
         }
     }catch(Exception e){
-      e.printStackTrace();
       System.out.println("Error al enviar un mensaje");
       return false;
     }
@@ -178,7 +206,6 @@ public class Cliente{
       System.out.println("Servidor: "+respuesta);
       String contacto= respuesta.substring(11,respuesta.length());
       String aux=respuesta.substring(0,11);
-      System.out.println(aux);
       if(aux.equals(Comandos.OK_NEWCONT)){
         System.out.println("Contacto "+contacto + " Guardado exitosamente");
         miBaseDatos.agregarContacto(usuario,nuevo);
